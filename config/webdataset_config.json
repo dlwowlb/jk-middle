@@ -1,0 +1,11 @@
+{
+    "dataset_type": "s3",
+    "datasets": [
+        {
+            "id": "s3",
+            "s3_path": "s3://jk1b1ucket/datasets/webdataset/freesound/"
+        }
+    ],
+    "random_crop": true
+}
+
