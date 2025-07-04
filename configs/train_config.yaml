@@ -1,21 +1,21 @@
-# configs/train_config.yaml
-# Stable Audio 구조 인식 모델 학습 설정
+# configs/train_config.yaml - 업데이트된 설정
+# Structure-Aware Stable Audio 학습 설정
 
 # 데이터 설정
 data:
   train_csv: "./data/train.csv"
   val_csv: "./data/val.csv"
   sample_rate: 44100
-  segment_duration: 30.0  # 초
-  hop_duration: 10.0      # 초
+  segment_duration: 20.0  # 메모리 사용량 줄이기 위해 단축
+  hop_duration: 8.0       # 오버랩 증가로 더 많은 세그먼트 생성
 
 # 모델 설정
 model:
   model_id: "stabilityai/stable-audio-open-1.0"
-  conditioning_method: "cross_attention"  # "concat", "cross_attention", "adaptive_concat"
+  conditioning_method: "cross_attention"  # "concat", "cross_attention"
   
   structure_encoder:
-    embedding_dim: 256
+    embedding_dim: 768
     hidden_dim: 512
     num_layers: 4
     num_heads: 8
@@ -23,47 +23,46 @@ model:
     max_structures: 50
   
   dit:
-    # Stable Audio DiT 설정 (기본값은 모델에서 자동으로 가져옴)
-    hidden_size: 1024
+    # Stable Audio DiT 설정 (필요시 오버라이드)
+    hidden_size: 768
     num_heads: 16
     depth: 24
     mlp_ratio: 4.0
-    in_channels: 64  # VAE latent channels
+    in_channels: 64
 
 # 학습 설정
 training:
   # 기본 학습 파라미터
-  batch_size: 2
-  num_epochs: 100
-  learning_rate: 0.0001  # 1e-4
-  min_lr: 0.000001      # 1e-6
+  batch_size: 1           # 메모리 부족시 1로 시작
+  num_epochs: 50          # 작은 데이터셋이므로 에폭 수 줄임
+  learning_rate: 5e-5     # 더 안정적인 학습률
+  min_lr: 1e-6
   weight_decay: 0.01
   gradient_clip: 1.0
   
   # 효율성을 위한 설정
-  accumulate_grad_batches: 4  # 실제 batch size = 2 * 4 = 8
-  use_amp: true              # Mixed precision training
+  accumulate_grad_batches: 8  # 실제 batch size = 1 * 8 = 8
+  use_amp: true              # Mixed precision training (메모리 절약)
   
   # 데이터 로더 설정
-  num_workers: 4
+  num_workers: 2  # 메모리 절약을 위해 줄임
   
   # 로깅 및 체크포인트
-  log_interval: 100          # 매 N 스텝마다 로그
-  val_interval: 1            # 매 N 에폭마다 검증
-  checkpoint_interval: 5     # 매 N 에폭마다 체크포인트 저장
-  max_checkpoints: 5         # 최대 체크포인트 개수
+  log_interval: 50           # 더 자주 로그
+  val_interval: 1            # 매 에폭마다 검증
+  checkpoint_interval: 5     # 체크포인트 간격
+  max_checkpoints: 3         # 디스크 공간 절약
   
   # 디렉토리
   checkpoint_dir: "./checkpoints/structure_audio"
   log_dir: "./logs/structure_audio"
   
-  # Weights & Biases
-  use_wandb: true
+  # Weights & Biases (선택사항)
+  use_wandb: false  # 처음에는 false로 설정
   wandb_project: "structure-aware-stable-audio"
   
   # 학습 재개 (선택사항)
-  # resume_from_checkpoint: "./checkpoints/structure_audio/checkpoint_epoch_10.pt"
+  # resume_from_checkpoint: "./checkpoints/structure_audio/best_model.pt"
 
-# 하드웨어 설정
-device: "cuda"  # "cuda" or "cpu"
-
+# 하드웨어 설정 (스크립트에서 자동 감지)
+# device: "cuda"

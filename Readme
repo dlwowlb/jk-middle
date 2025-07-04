@@ -1,0 +1,17 @@
+# 1. 환경 설정
+pip install -r requirements.txt
+huggingface-cli login
+
+# 2. 데이터 다운로드 (소량 테스트)
+python scripts/download_datasets.py --max-files 50
+
+# 3. 데이터 전처리 및 동기화
+python scripts/prepare_salami_data.py \
+    --salami_root ./datasets/salami-data-public \
+    --audio_root ./datasets/audio
+
+# 4. 설정 테스트
+python scripts/train.py --dry-run
+
+# 5. 실제 학습
+python scripts/train.py
