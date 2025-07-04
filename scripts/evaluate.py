@@ -132,3 +132,62 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# configs/train_config.yaml - 업데이트된 설정
+project_name: "structure-aware-stable-audio"
+
+data:
+  train_csv: "./data/train.csv"
+  val_csv: "./data/val.csv"
+  sample_rate: 44100
+  segment_duration: 30.0
+  hop_duration: 10.0
+
+model:
+  model_id: "stabilityai/stable-audio-open-1.0"  # HuggingFace model ID
+  conditioning_method: "cross_attention"  # or "concat" or "adaptive_concat"
+  
+  structure_encoder:
+    embedding_dim: 256
+    hidden_dim: 512
+    num_layers: 4
+    num_heads: 8
+    dropout: 0.1
+    max_structures: 50
+  
+  dit:
+    # 이 값들은 base_dit_config를 오버라이드합니다
+    hidden_size: 1024
+    num_heads: 16
+    depth: 24
+    mlp_ratio: 4.0
+
+training:
+  batch_size: 2  # 메모리 사용량이 크므로 작게 설정
+  num_epochs: 100
+  learning_rate: 1e-4
+  min_lr: 1e-6
+  weight_decay: 0.01
+  gradient_clip: 1.0
+  
+  num_workers: 4
+  log_interval: 100
+  val_interval: 1
+  checkpoint_interval: 5
+  checkpoint_dir: "./checkpoints"
+  log_dir: "./logs"
+  
+  use_wandb: true
+  wandb_project: "structure-audio"
+  
+  # Mixed precision training
+  use_amp: true
+  
+  # Gradient accumulation (effective batch size = batch_size * accumulate_grad_batches)
+  accumulate_grad_batches: 4
+
+# Optional: resume from checkpoint
+# resume_from_checkpoint: "./checkpoints/checkpoint_epoch_10.pt"
+
+device: "cuda"
