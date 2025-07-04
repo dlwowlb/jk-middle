@@ -73,9 +73,16 @@ class StructuredAudioDataset(Dataset):
                 resampler = torchaudio.transforms.Resample(sr, self.sample_rate)
                 waveform = resampler(waveform)
                 
-            # 모노로 변환
-            if waveform.shape[0] > 1:
-                waveform = waveform.mean(dim=0, keepdim=True)
+            # 스테레오로 변환 (Stable Audio VAE는 스테레오 입력 필요)
+            if waveform.shape[0] == 1:
+                # 모노를 스테레오로 복사
+                waveform = waveform.repeat(2, 1)
+            elif waveform.shape[0] > 2:
+                # 멀티채널을 스테레오로 축소
+                waveform = waveform[:2]
+                
+            # 정규화 [-1, 1]
+            waveform = waveform / (waveform.abs().max() + 1e-8)
                 
             # 패딩 (필요한 경우)
             expected_length = int((end_time - start_time) * self.sample_rate)
@@ -85,8 +92,8 @@ class StructuredAudioDataset(Dataset):
                 
         except Exception as e:
             print(f"Error loading audio {audio_path}: {e}")
-            # 에러 시 무음 반환
-            waveform = torch.zeros(1, int((end_time - start_time) * self.sample_rate))
+            # 에러 시 무음 반환 (스테레오)
+            waveform = torch.zeros(2, int((end_time - start_time) * self.sample_rate))
             
         # 구조 시퀀스 파싱 및 세그먼트에 맞게 조정
         full_structure = json.loads(row['structure_sequence'])

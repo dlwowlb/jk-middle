@@ -1,10 +1,5 @@
-## 9. 데이터 준비 스크립트 (scripts/prepare_salami_data.py)
-
-
 import sys
 sys.path.append('..')
-sys.path.append('.')
-
 
 from src.data.salami_parser import SALAMIParser
 import argparse

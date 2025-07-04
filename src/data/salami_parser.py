@@ -5,12 +5,6 @@ from pathlib import Path
 from typing import Dict, List, Tuple, Optional
 import re
 
-
-import sys
-sys.path.append('..')
-sys.path.append('.')
-
-
 class SALAMIParser:
     """SALAMI 데이터셋 파싱 및 전처리"""
     
@@ -97,14 +91,14 @@ class SALAMIParser:
                 
         return sequences
     
-    def find_audio_file(self, SONG_ID: str) -> Optional[Path]:
+    def find_audio_file(self, salami_id: str) -> Optional[Path]:
         """SALAMI ID에 해당하는 오디오 파일 찾기"""
         # 다양한 명명 패턴 시도
         patterns = [
-            f"{SONG_ID}.*",
-            f"SALAMI_{SONG_ID}.*",
-            f"*_{SONG_ID}.*",
-            f"{SONG_ID:0>4}.*"  # Zero-padded
+            f"{salami_id}.*",
+            f"SALAMI_{salami_id}.*",
+            f"*_{salami_id}.*",
+            f"{salami_id:0>4}.*"  # Zero-padded
         ]
         
         for pattern in patterns:
@@ -125,10 +119,10 @@ class SALAMIParser:
         processed_data = []
         
         for _, row in metadata.iterrows():
-            SONG_ID = str(row['SONG_ID'])
+            salami_id = str(row['SALAMI_id'])
             
             # 어노테이션 디렉토리 찾기
-            ann_dir = self.annotations_dir / SONG_ID
+            ann_dir = self.annotations_dir / salami_id
             if not ann_dir.exists():
                 continue
                 
@@ -150,13 +144,13 @@ class SALAMIParser:
                 continue
                 
             # 오디오 파일 찾기
-            audio_path = self.find_audio_file(SONG_ID)
+            audio_path = self.find_audio_file(salami_id)
             if not audio_path:
                 continue
                 
             # 데이터 저장
             processed_data.append({
-                'SONG_ID': SONG_ID,
+                'salami_id': salami_id,
                 'audio_path': str(audio_path),
                 'annotation_path': str(ann_file),
                 'structure_sequence': json.dumps(structure_sequence),

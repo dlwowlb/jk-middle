@@ -1,0 +1,53 @@
+# configs/dataset_config.yaml
+# 데이터셋 설정
+
+dataset:
+  name: "SALAMI_StructuredAudio"
+  
+  # 경로
+  salami_root: "/path/to/salami-data-public"
+  audio_root: "/path/to/audio/files"
+  processed_csv: "./data/salami_processed.csv"
+  
+  # 전처리 설정
+  preprocessing:
+    sample_rate: 44100
+    mono: true
+    normalize: true
+    trim_silence: true
+    silence_threshold_db: -40
+    
+    # 필터링
+    min_duration: 10.0   # 초
+    max_duration: 600.0  # 초 (10분)
+    min_structures: 3    # 최소 구조 개수
+    
+  # 구조 매핑
+  structure_mapping:
+    intro: ["intro", "i", "fade_in", "opening", "head"]
+    verse: ["verse", "v", "a", "strophe", "verse1", "verse2"]
+    pre-chorus: ["pre-chorus", "prechorus", "pre", "lift", "build"]
+    chorus: ["chorus", "c", "refrain", "b", "hook"]
+    bridge: ["bridge", "br", "middle", "middle_eight", "d"]
+    instrumental: ["solo", "instrumental", "inst", "guitar_solo"]
+    outro: ["outro", "o", "fade_out", "ending", "coda"]
+    break: ["break", "breakdown", "drop"]
+    
+  # 데이터 분할
+  split:
+    train: 0.8
+    val: 0.1
+    test: 0.1
+    random_seed: 42
+    stratify_by_duration: true  # 길이별로 균등 분할
+    
+  # 증강 (선택사항)
+  augmentation:
+    enable: false
+    time_stretch:
+      min_rate: 0.9
+      max_rate: 1.1
+    pitch_shift:
+      min_semitones: -2
+      max_semitones: 2
+    

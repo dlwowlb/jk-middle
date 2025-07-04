@@ -1,0 +1,60 @@
+# configs/generate_config.yaml
+# 생성 설정
+
+generation:
+  # 기본 생성 파라미터
+  default_num_steps: 100
+  default_guidance_scale: 7.0
+  default_seed: null  # null이면 랜덤
+  
+  # 구조 템플릿
+  structure_templates:
+    pop_short:
+      - ["intro", 0, 8]
+      - ["verse", 8, 24]
+      - ["chorus", 24, 40]
+      - ["outro", 40, 48]
+    
+    pop_standard:
+      - ["intro", 0, 8]
+      - ["verse", 8, 24]
+      - ["pre-chorus", 24, 32]
+      - ["chorus", 32, 48]
+      - ["verse", 48, 64]
+      - ["pre-chorus", 64, 72]
+      - ["chorus", 72, 88]
+      - ["bridge", 88, 96]
+      - ["chorus", 96, 112]
+      - ["outro", 112, 120]
+    
+    edm:
+      - ["intro", 0, 16]
+      - ["build", 16, 32]
+      - ["drop", 32, 48]
+      - ["break", 48, 64]
+      - ["build", 64, 80]
+      - ["drop", 80, 96]
+      - ["outro", 96, 104]
+    
+    rock:
+      - ["intro", 0, 8]
+      - ["verse", 8, 24]
+      - ["chorus", 24, 40]
+      - ["verse", 40, 56]
+      - ["chorus", 56, 72]
+      - ["instrumental", 72, 88]
+      - ["chorus", 88, 104]
+      - ["outro", 104, 112]
+  
+  # 프롬프트 템플릿
+  prompt_templates:
+    - "A {genre} song with {instruments}"
+    - "{mood} {genre} music featuring {instruments}"
+    - "{tempo} {genre} track with {structure_hint}"
+  
+  # 후처리
+  post_processing:
+    normalize: true
+    target_db: -14.0  # LUFS
+    fade_in_ms: 50
+    fade_out_ms: 100

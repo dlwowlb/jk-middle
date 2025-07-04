@@ -1,17 +1,18 @@
-# Training configuration
-project_name: "structure-aware-stable-audio"
+# configs/train_config.yaml
+# Stable Audio 구조 인식 모델 학습 설정
 
+# 데이터 설정
 data:
   train_csv: "./data/train.csv"
   val_csv: "./data/val.csv"
   sample_rate: 44100
-  segment_duration: 30.0
-  hop_duration: 10.0
+  segment_duration: 30.0  # 초
+  hop_duration: 10.0      # 초
 
+# 모델 설정
 model:
-  vae_model: "stabilityai/stable-audio-open-1.0"
-  text_encoder: "google/t5-v1_1-base"
-  conditioning_method: "cross_attention"  # or "concat"
+  model_id: "stabilityai/stable-audio-open-1.0"
+  conditioning_method: "cross_attention"  # "concat", "cross_attention", "adaptive_concat"
   
   structure_encoder:
     embedding_dim: 256
@@ -22,23 +23,47 @@ model:
     max_structures: 50
   
   dit:
-    hidden_size: 768
-    num_heads: 12
-    depth: 12
+    # Stable Audio DiT 설정 (기본값은 모델에서 자동으로 가져옴)
+    hidden_size: 1024
+    num_heads: 16
+    depth: 24
     mlp_ratio: 4.0
+    in_channels: 64  # VAE latent channels
 
+# 학습 설정
 training:
-  batch_size: 4
+  # 기본 학습 파라미터
+  batch_size: 2
   num_epochs: 100
-  learning_rate: 0.0001
-  min_lr: 0.00001
+  learning_rate: 0.0001  # 1e-4
+  min_lr: 0.000001      # 1e-6
   weight_decay: 0.01
   gradient_clip: 1.0
   
-  num_workers: 4
-  log_interval: 100
-  val_interval: 1
-  checkpoint_dir: "./checkpoints"
-  log_dir: "./logs"
+  # 효율성을 위한 설정
+  accumulate_grad_batches: 4  # 실제 batch size = 2 * 4 = 8
+  use_amp: true              # Mixed precision training
   
+  # 데이터 로더 설정
+  num_workers: 4
+  
+  # 로깅 및 체크포인트
+  log_interval: 100          # 매 N 스텝마다 로그
+  val_interval: 1            # 매 N 에폭마다 검증
+  checkpoint_interval: 5     # 매 N 에폭마다 체크포인트 저장
+  max_checkpoints: 5         # 최대 체크포인트 개수
+  
+  # 디렉토리
+  checkpoint_dir: "./checkpoints/structure_audio"
+  log_dir: "./logs/structure_audio"
+  
+  # Weights & Biases
   use_wandb: true
+  wandb_project: "structure-aware-stable-audio"
+  
+  # 학습 재개 (선택사항)
+  # resume_from_checkpoint: "./checkpoints/structure_audio/checkpoint_epoch_10.pt"
+
+# 하드웨어 설정
+device: "cuda"  # "cuda" or "cpu"
+

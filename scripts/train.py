@@ -1,6 +1,4 @@
-## 7. 학습 실행 스크립트 (scripts/train.py)
-
-
+# scripts/train.py
 import sys
 sys.path.append('..')
 sys.path.append('.')
@@ -12,11 +10,37 @@ from src.models.structure_dit import StructureConditionedDiT
 from src.models.pipeline import StructureAwareStableAudioPipeline
 from src.training.trainer import StructureAudioTrainer
 import yaml
+import argparse
+from pathlib import Path
+
+def load_config(config_path: str) -> dict:
+    """설정 파일 로드 및 검증"""
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+    
+    # 필수 섹션 확인
+    required_sections = ['data', 'model', 'training']
+    for section in required_sections:
+        if section not in config:
+            raise ValueError(f"Config file must contain '{section}' section")
+    
+    return config
 
 def main():
+    parser = argparse.ArgumentParser(description='Train Structure-Aware Stable Audio')
+    parser.add_argument('--config', type=str, default='configs/train_config.yaml',
+                       help='Path to training config file')
+    parser.add_argument('--resume', type=str, default=None,
+                       help='Path to checkpoint to resume from')
+    args = parser.parse_args()
+    
     # 설정 로드
-    with open('configs/train_config.yaml', 'r') as f:
-        config = yaml.safe_load(f)
+    print(f"Loading config from {args.config}")
+    config = load_config(args.config)
+    
+    # Resume 설정 오버라이드
+    if args.resume:
+        config['training']['resume_from_checkpoint'] = args.resume
     
     # 데이터셋 생성
     print("Loading datasets...")
@@ -41,25 +65,44 @@ def main():
     print("Creating model...")
     
     # Structure encoder
+    encoder_config = config['model']['structure_encoder']
     structure_encoder = StructureEncoder(
-        embedding_dim=config['model']['structure_encoder']['embedding_dim'],
-        hidden_dim=config['model']['structure_encoder']['hidden_dim'],
-        num_layers=config['model']['structure_encoder']['num_layers']
+        embedding_dim=encoder_config['embedding_dim'],
+        hidden_dim=encoder_config['hidden_dim'],
+        num_layers=encoder_config['num_layers'],
+        num_heads=encoder_config.get('num_heads', 8),
+        dropout=encoder_config.get('dropout', 0.1),
+        max_structures=encoder_config.get('max_structures', 50)
     )
     
-    # DiT
-    dit = StructureConditionedDiT(
-        base_dit_config=config['model']['dit'],
+    # 기존 Stable Audio transformer 설정 가져오기
+    base_dit_config = {
+        'hidden_size': 1024,
+        'num_heads': 16,
+        'depth': 24,
+        'mlp_ratio': 4.0,
+        'in_channels': 64,
+    }
+    
+    # 설정 파일에서 오버라이드
+    if 'dit' in config['model']:
+        base_dit_config.update(config['model']['dit'])
+    
+    # Structure-conditioned DiT
+    structure_dit = StructureConditionedDiT(
+        base_dit_config=base_dit_config,
         structure_encoder=structure_encoder,
         conditioning_method=config['model']['conditioning_method']
     )
     
     # Pipeline
     model = StructureAwareStableAudioPipeline(
-        vae_model_name=config['model']['vae_model'],
-        text_encoder_name=config['model']['text_encoder'],
-        structure_dit=dit
+        model_id=config['model']['model_id'],
+        structure_dit=structure_dit,
+        device=config.get('device', 'cuda')
     )
+    
+    print(f"Model created with {sum(p.numel() for p in model.transformer.parameters() if p.requires_grad):,} trainable parameters")
     
     # 트레이너
     trainer = StructureAudioTrainer(
@@ -69,12 +112,19 @@ def main():
         config=config['training']
     )
     
+    # 체크포인트 로드 (있는 경우)
+    if config['training'].get('resume_from_checkpoint'):
+        checkpoint_path = config['training']['resume_from_checkpoint']
+        if Path(checkpoint_path).exists():
+            trainer.load_checkpoint(checkpoint_path)
+        else:
+            print(f"Warning: Checkpoint {checkpoint_path} not found, starting from scratch")
+    
     # 학습 시작
-    print("Starting training...")
+    print("\nStarting training...")
+    print("=" * 50)
     trainer.train()
 
 
 if __name__ == "__main__":
     main()
-
-

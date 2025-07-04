@@ -1,9 +1,5 @@
-## 8. 생성 스크립트 (scripts/generate.py)
-
-
 import sys
 sys.path.append('..')
-sys.path.append('.')
 
 import torch
 import torchaudio
@@ -69,5 +65,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-

@@ -205,4 +205,3 @@ class DiTBlock(nn.Module):
         x = x + gate_mlp[:, None] * mlp_out
         
         return x
-
