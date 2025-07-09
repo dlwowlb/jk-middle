@@ -2,3 +2,4 @@ reference/
 wandb/
 datasets/
 checkpoints/
+logs/

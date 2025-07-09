@@ -359,7 +359,7 @@ Examples:
                         help='Base directory for datasets (default: ./datasets)')
     parser.add_argument('--max-files', type=int, default=None,
                         help='Maximum number of audio files to download (default: all)')
-    parser.add_argument('--workers', type=int, default=4,
+    parser.add_argument('--workers', type=int, default=1,
                         help='Number of parallel download workers (default: 4)')
     
     args = parser.parse_args()

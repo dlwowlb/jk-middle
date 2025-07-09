@@ -1,3 +1,4 @@
+# scripts/generate.py
 import sys
 sys.path.append('..')
 sys.path.append('.')
@@ -56,15 +57,18 @@ def main():
     # 모델 재생성
     structure_encoder = StructureEncoder(
         **model_config.get('structure_encoder', {
-            'embedding_dim': 256,
+            'embedding_dim': 768,
             'hidden_dim': 512,
-            'num_layers': 4
+            'num_layers': 4,
+            'num_heads': 8,
+            'dropout': 0.1,
+            'max_structures': 50
         })
     )
     
     # DiT 설정
     base_dit_config = {
-        'hidden_size': 1024,
+        'hidden_size': 768,
         'num_heads': 16,
         'depth': 24,
         'mlp_ratio': 4.0,

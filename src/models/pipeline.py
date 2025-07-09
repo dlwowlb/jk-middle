@@ -24,14 +24,14 @@ class StructureAwareStableAudioPipeline(nn.Module):
         try:
             self.base_pipeline = StableAudioPipeline.from_pretrained(
                 model_id,
-                torch_dtype=torch.float16,
+                torch_dtype=torch.float32,
                 variant="fp16"
             ).to(self.device)
         except:
             # Fallback without variant
             self.base_pipeline = StableAudioPipeline.from_pretrained(
                 model_id,
-                torch_dtype=torch.float16
+                torch_dtype=torch.float32
             ).to(self.device)
         
         # 컴포넌트 추출
@@ -51,7 +51,7 @@ class StructureAwareStableAudioPipeline(nn.Module):
         
         # 기존 transformer 대신 structure-conditioned DiT 사용
         if structure_dit is not None:
-            self.transformer = structure_dit
+            self.transformer = structure_dit.to(self.device)
         else:
             self.transformer = self.base_pipeline.transformer
             
@@ -83,7 +83,7 @@ class StructureAwareStableAudioPipeline(nn.Module):
         
         # 범위 확인 및 클리핑
         audio = audio.clamp(-1, 1)
-        audio = audio.to(dtype=torch.float16, device=self.device)
+        audio = audio.to(dtype=torch.float32, device=self.device)
         
         with torch.no_grad():
             try:
@@ -109,7 +109,7 @@ class StructureAwareStableAudioPipeline(nn.Module):
                 latent_length = audio.shape[-1] // self.vae_scale_factor
                 latents = torch.randn(
                     audio.shape[0], latent_channels, latent_length,
-                    dtype=torch.float16, device=self.device
+                    dtype=torch.float32, device=self.device
                 )
         
         return latents
@@ -136,18 +136,21 @@ class StructureAwareStableAudioPipeline(nn.Module):
                 audio_length = latents.shape[-1] * self.vae_scale_factor
                 audio = torch.zeros(
                     latents.shape[0], 2, audio_length,
-                    device=self.device, dtype=torch.float16
+                    device=self.device, dtype=torch.float32
                 )
                 
         return audio
     
-    def encode_text_prompts(self, prompts: List[str]) -> Tuple[torch.Tensor, torch.Tensor]:
+    def encode_text_prompts(self, prompts: List[str], max_length: Optional[int] = None) -> Tuple[torch.Tensor, torch.Tensor]:
         """텍스트 프롬프트를 인코딩"""
+        if max_length is None:
+            max_length = getattr(self.tokenizer, 'model_max_length', 512)
+            
         text_inputs = self.tokenizer(
             prompts,
-            padding=True,
+            padding='max_length',  # 모든 시퀀스를 같은 길이로
             truncation=True,
-            max_length=getattr(self.tokenizer, 'model_max_length', 512),
+            max_length=max_length,
             return_tensors="pt"
         ).to(self.device)
         
@@ -280,9 +283,13 @@ class StructureAwareStableAudioPipeline(nn.Module):
         # 타이밍 임베딩
         if self.time_proj is None:
             self.time_proj = nn.Linear(2, text_embeds_mean.shape[-1]).to(self.device)
+        
+        # time_proj가 올바른 디바이스에 있는지 확인
+        if next(self.time_proj.parameters()).device != self.device:
+            self.time_proj = self.time_proj.to(self.device)
             
         time_embeds = self.time_proj(
-            torch.stack([seconds_start, seconds_total], dim=-1).float()
+            torch.stack([seconds_start, seconds_total], dim=-1).float().to(self.device)
         )
         
         global_embeds = text_embeds_mean + time_embeds
