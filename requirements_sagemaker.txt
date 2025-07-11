@@ -1,0 +1,30 @@
+# requirements_sagemaker.txt
+# SageMaker 훈련 컨테이너용 의존성
+
+# PyTorch는 SageMaker 컨테이너에 이미 설치되어 있음
+# torch>=2.0.0
+# torchaudio>=2.0.0
+# torchvision>=0.15.0
+
+# Diffusion and Audio Generation
+diffusers>=0.25.0
+transformers>=4.35.0
+accelerate>=0.24.0
+
+# Audio processing
+librosa>=0.10.0
+soundfile>=0.12.0
+
+# Data and utilities
+numpy>=1.24.0
+pandas>=2.0.0
+scikit-learn>=1.3.0
+tqdm>=4.65.0
+einops>=0.7.0
+
+# Configuration
+PyYAML>=6.0
+
+# SageMaker는 자체 로깅 시스템 사용
+# tensorboard는 선택사항
+# wandb는 사용하지 않음

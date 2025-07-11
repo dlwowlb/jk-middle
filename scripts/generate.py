@@ -26,13 +26,13 @@ def main():
     parser.add_argument('--text', type=str, default="A pop song with guitar and drums",
                         help='Text prompt for generation')
     parser.add_argument('--structure', type=str, 
-                        default="intro:0:8,verse:8:24,chorus:24:40,outro:40:48",
+                        default="intro:0:8,verse:8:16,outro:8:12",
                         help='Structure sequence (format: name:start:end,name:start:end,...)')
     parser.add_argument('--output', type=str, default="generated.wav",
                         help='Output audio file path')
-    parser.add_argument('--steps', type=int, default=100,
+    parser.add_argument('--steps', type=int, default=20,
                         help='Number of denoising steps')
-    parser.add_argument('--guidance', type=float, default=7.0,
+    parser.add_argument('--guidance', type=float, default=1.0,
                         help='Classifier-free guidance scale')
     parser.add_argument('--negative_prompt', type=str, default="low quality, noise",
                         help='Negative prompt')
