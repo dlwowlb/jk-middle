@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 import argparse
 import time
+import wandb
 
 class SageMakerStructureAudioTrainer:
     """SageMaker를 위한 Structure-Aware Audio 훈련 관리자"""
@@ -178,7 +179,7 @@ class SageMakerStructureAudioTrainer:
             role=self.role,
             instance_type=instance_type,
             instance_count=1,
-            framework_version='2.0.0',
+            framework_version='2.2.0',
             py_version='py310',
             
             # 스팟 인스턴스 설정
