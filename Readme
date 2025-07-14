@@ -15,3 +15,6 @@ python scripts/train.py --dry-run
 
 # 5. 실제 학습
 python scripts/train.py
+
+#6. 이어서 학습
+python scripts/train.py --resume ./checkpoints/structure_audio/best_model.pt

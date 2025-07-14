@@ -1,10 +1,9 @@
-# requirements_sagemaker.txt
-# SageMaker 훈련 컨테이너용 의존성
+# requirements_sagemaker.txt - SageMaker 환경용 requirements
 
-# PyTorch는 SageMaker 컨테이너에 이미 설치되어 있음
-# torch>=2.2.0
-# torchaudio>=2.0.0
-# torchvision>=0.15.0
+# Core ML frameworks (SageMaker 호환 버전)
+torch>=2.0.0
+torchaudio>=2.0.0
+torchvision>=0.15.0
 
 # Diffusion and Audio Generation
 diffusers>=0.25.0
@@ -25,6 +24,9 @@ einops>=0.7.0
 # Configuration
 PyYAML>=6.0
 
-# SageMaker는 자체 로깅 시스템 사용
-# tensorboard는 선택사항
-# wandb는 사용하지 않음
+# AWS SDK (SageMaker 환경에서 기본 제공되지만 명시)
+boto3>=1.26.0
+sagemaker>=2.150.0
+
+# Additional utilities
+pathlib2>=2.3.7

@@ -1,0 +1,58 @@
+# configs/train_config_sagemaker.yaml - SageMaker 훈련 작업용 설정
+project_name: "structure-aware-stable-audio-sagemaker"
+
+data:
+  train_csv: "/opt/ml/input/data/training/train.csv"
+  val_csv: "/opt/ml/input/data/training/val.csv"
+  sample_rate: 44100
+  segment_duration: 20.0  # SageMaker GPU 메모리 고려
+  hop_duration: 8.0
+
+model:
+  model_id: "stabilityai/stable-audio-open-1.0"
+  conditioning_method: "cross_attention"
+  
+  structure_encoder:
+    embedding_dim: 256
+    hidden_dim: 512
+    num_layers: 4
+    num_heads: 8
+    dropout: 0.1
+    max_structures: 50
+  
+  dit:
+    hidden_size: 768  # 메모리 사용량 고려하여 축소
+    num_heads: 16
+    depth: 24
+    mlp_ratio: 4.0
+
+training:
+  batch_size: 1  # SageMaker 스팟 인스턴스 메모리 고려
+  num_epochs: 50  # 스팟 인스턴스 중단 고려하여 단축
+  learning_rate: 1e-4
+  min_lr: 1e-6
+  weight_decay: 0.01
+  gradient_clip: 1.0
+  
+  num_workers: 2  # SageMaker 환경에서 안정성을 위해 축소
+  log_interval: 50
+  val_interval: 2  # 더 자주 검증
+  checkpoint_interval: 2  # 더 자주 체크포인트 저장
+  
+  # SageMaker 경로
+  checkpoint_dir: "/opt/ml/model/checkpoints"
+  log_dir: "/opt/ml/output/logs"
+  
+  # Mixed precision training (메모리 절약)
+  use_amp: true
+  
+  # Gradient accumulation (effective batch size = batch_size * accumulate_grad_batches)
+  accumulate_grad_batches: 8  # effective batch size = 8
+  
+  # Wandb 비활성화 (SageMaker에서는 CloudWatch 사용)
+  use_wandb: false
+  
+  # 체크포인트 관리
+  max_checkpoints: 2  # 스토리지 절약
+
+device: "cuda"

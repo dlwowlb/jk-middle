@@ -58,11 +58,11 @@ training:
   log_dir: "./logs/structure_audio"
   
   # Weights & Biases (선택사항)
-  use_wandb: false  # 처음에는 false로 설정
+  use_wandb: true  # 처음에는 false로 설정
   wandb_project: "structure-aware-stable-audio"
   
   # 학습 재개 (선택사항)
-  # resume_from_checkpoint: "./checkpoints/structure_audio/best_model.pt"
+  resume_from_checkpoint: "./checkpoints/structure_audio/best_model.pt"
 
 # 하드웨어 설정 (스크립트에서 자동 감지)
 # device: "cuda"
