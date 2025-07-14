@@ -26,7 +26,7 @@ def main():
     parser.add_argument('--text', type=str, default="A pop song with guitar and drums",
                         help='Text prompt for generation')
     parser.add_argument('--structure', type=str, 
-                        default="intro:0:8,verse:8:16,outro:8:12",
+                        default="intro:0:4,verse:4:8,outro:8:12",
                         help='Structure sequence (format: name:start:end,name:start:end,...)')
     parser.add_argument('--output', type=str, default="generated.wav",
                         help='Output audio file path')

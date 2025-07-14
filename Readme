@@ -18,3 +18,6 @@ python scripts/train.py
 
 #6. 이어서 학습
 python scripts/train.py --resume ./checkpoints/structure_audio/best_model.pt
+
+#7. generate
+python scripts/generate.py --checkpoint ./checkpoints/structure_audio/best_model.pt
